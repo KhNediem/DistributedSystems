@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro Games Catalog</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6c5ce7;
+            --secondary-color: #a29bfe;
+            --background-color: #f5f6fa;
+            --card-background: #ffffff;
+            --text-color: #2d3436;
+            --border-radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            padding: 2rem;
+            color: white;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Press Start 2P', cursive;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+
+        .search-filter-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        #search {
+            width: 100%;
+            padding: 0.8rem;
+            border: none;
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .filters {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        select {
+            padding: 0.5rem;
+            border: none;
+            border-radius: var(--border-radius);
+            background-color: white;
+            cursor: pointer;
+        }
+
+        main {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .game-card {
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .game-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .game-info {
+            padding: 1rem;
+        }
+
+        .game-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .game-price {
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .game-rating {
+            color: #f1c40f;
+            margin-top: 0.5rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: var(--card-background);
+            margin: 5% auto;
+            padding: 2rem;
+            width: 90%;
+            max-width: 800px;
+            border-radius: var(--border-radius);
+        }
+
+        .close-button {
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            margin-top: 1rem;
+        }
+
+        .modal-image {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal-description {
+            margin-bottom: 1rem;
+            line-height: 1.8;
+        }
+
+        .modal-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .filters {
+                flex-direction: column;
+            }
+            
+            select {
+                width: 100%;
+            }
+            
+            .modal-content {
+                margin: 10% auto;
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Retro Games Catalog</h1>
+        <div class="search-filter-container">
+            <input type="text" id="search" placeholder="Search games...">
+            <div class="filters">
+                <select id="yearFilter">
+                    <option value="">All Years</option>
+                    <option value="1980">1980s</option>
+                    <option value="1990">1990s</option>
+                    <option value="2000">2000s</option>
+                </select>
+                <select id="priceFilter">
+                    <option value="">All Prices</option>
+                    <option value="0-20">Under $20</option>
+                    <option value="20-50">$20 - $50</option>
+                    <option value="50+">Over $50</option>
+                </select>
+                <select id="ratingFilter">
+                    <option value="">All Ratings</option>
+                    <option value="4">4+ Stars</option>
+                    <option value="3">3+ Stars</option>
+                    <option value="2">2+ Stars</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="games-grid" id="gamesGrid"></div>
+    </main>
+
+    <div class="modal" id="gameModal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <div class="modal-body"></div>
+        </div>
+    </div>
+
+    <script>
+        const games = [
+            {
+                id: 1,
+                name: "Super Mario Bros. 3",
+                price: 49.99,
+                rating: 4.9,
+                images: ["https://upload.wikimedia.org/wikipedia/en/a/a5/Super_Mario_Bros._3_coverart.png"],
+                description: "One of the most iconic platformers ever created, featuring multiple worlds, power-ups, and innovative level design.",
+                releaseYear: 1988
+            },
+            {
+                id: 2,
+                name: "The Legend of Zelda: A Link to the Past",
+                price: 59.99,
+                rating: 4.8,
+                images: ["https://upload.wikimedia.org/wikipedia/en/2/21/The_Legend_of_Zelda_A_Link_to_the_Past_SNES_Game_Cover.jpg"],
+                description: "A legendary action-adventure game that defined the genre with its dual-world mechanic and intricate dungeon design.",
+                releaseYear: 1991
+            },
+            {
+                id: 3,
+                name: "Sonic the Hedgehog 2",
+                price: 29.99,
+                rating: 4.5,
+                images: ["https://upload.wikimedia.org/wikipedia/en/0/0c/Sonic_the_Hedgehog_2_US_Cover.jpg"],
+                description: "The blue blur's greatest adventure, introducing Tails and the spin dash move that became a series staple.",
+                releaseYear: 1992
+            },
+            {
+                id: 4,
+                name: "Final Fantasy VII",
+                price: 69.99,
+                rating: 4.9,
+                images: ["https://upload.wikimedia.org/wikipedia/en/c/c2/Final_Fantasy_VII_Box_Art.jpg"],
+                description: "A groundbreaking JRPG that brought the genre into the 3D era with its epic story and memorable characters.",
+                releaseYear: 1997
+            },
+            {
+                id: 5,
+                name: "Street Fighter II",
+                price: 39.99,
+                rating: 4.7,
+                images: ["https://upload.wikimedia.org/wikipedia/en/1/1f/Street_Fighter_II_The_World_Warrior_cover.jpg"],
+                description: "The fighting game that started a revolution, featuring iconic characters and precise gameplay mechanics.",
+                releaseYear: 1991
+            }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const gamesGrid = document.getElementById('gamesGrid');
+            const searchInput = document.getElementById('search');
+            const yearFilter = document.getElementById('yearFilter');
+            const priceFilter = document.getElementById('priceFilter');
+            const ratingFilter = document.getElementById('ratingFilter');
+            const modal = document.getElementById('gameModal');
+            const modalContent = modal.querySelector('.modal-content');
+            const closeButton = modal.querySelector('.close-button');
+
+            let filteredGames = [...games];
+
+            function renderGames(gamesToRender) {
+                gamesGrid.innerHTML = '';
+                gamesToRender.forEach(game => {
+                    const card = document.createElement('div');
+                    card.className = 'game-card';
+                    card.innerHTML = `
+                        <img src="${game.images[0]}" alt="${game.name}" class="game-image">
+                        <div class="game-info">
+                            <h3 class="game-title">${game.name}</h3>
+                            <p class="game-price">$${game.price.toFixed(2)}</p>
+                            <div class="game-rating">★ ${game.rating.toFixed(1)}</div>
+                        </div>
+                    `;
+                    card.addEventListener('click', () => showGameDetails(game));
+                    gamesGrid.appendChild(card);
+                });
+            }
+
+            function showGameDetails(game) {
+                const modalBody = modal.querySelector('.modal-body');
+                modalBody.innerHTML = `
+                    <img src="${game.images[0]}" alt="${game.name}" class="modal-image">
+                    <h2 class="modal-title">${game.name}</h2>
+                    <p class="modal-description">${game.description}</p>
+                    <div class="modal-details">
+                        <div>
+                            <strong>Price:</strong> $${game.price.toFixed(2)}
+                        </div>
+                        <div>
+                            <strong>Rating:</strong> ★ ${game.rating.toFixed(1)}
+                        </div>
+                        <div>
+                            <strong>Release Year:</strong> ${game.releaseYear}
+                        </div>
+                    </div>
+                `;
+                modal.style.display = 'block';
+            }
+
+            function filterGames() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const yearValue = yearFilter.value;
+                const priceValue = priceFilter.value;
+                const ratingValue = ratingFilter.value;
+
+                filteredGames = games.filter(game => {
+                    const matchesSearch = game.name.toLowerCase().includes(searchTerm);
+                    
+                    const matchesYear = !yearValue || 
+                        (yearValue === '1980' && game.releaseYear >= 1980 && game.releaseYear < 1990) ||
+                        (yearValue === '1990' && game.releaseYear >= 1990 && game.releaseYear < 2000) ||
+                        (yearValue === '2000' && game.releaseYear >= 2000);
+
+                    const matchesPrice = !priceValue ||
+                        (priceValue === '0-20' && game.price <= 20) ||
+                        (priceValue === '20-50' && game.price > 20 && game.price <= 50) ||
+                        (priceValue === '50+' && game.price > 50);
+
+                    const matchesRating = !ratingValue || game.rating >= parseInt(ratingValue);
+
+                    return matchesSearch && matchesYear && matchesPrice && matchesRating;
+                });
+
+                renderGames(filteredGames);
+            }
+
+            // Event Listeners
+            searchInput.addEventListener('input', filterGames);
+            yearFilter.addEventListener('change', filterGames);
+            priceFilter.addEventListener('change', filterGames);
+            ratingFilter.addEventListener('change', filterGames);
+
+            closeButton.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+
+            window.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+
+            // Initial render
+            renderGames(games);
+        });
+    </script>
+</body>
+</html>
