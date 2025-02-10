@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro Games Catalog</title>
+    <!-- Link to the external CSS file -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Retro Games Catalog</h1>
+    </header>
+
+    <div class="search-filter-container">
+        <input type="text" id="search" placeholder="Search for games...">
+        <div class="filters">
+            <select id="year-filter">
+                <option value="all">All Years</option>
+                <option value="1980s">1980s</option>
+                <option value="1990s">1990s</option>
+                <option value="2000s">2000s</option>
+            </select>
+            <select id="price-filter">
+                <option value="all">All Prices</option>
+                <option value="under20">Under $20</option>
+                <option value="20to50">$20 - $50</option>
+                <option value="over50">Over $50</option>
+            </select>
+            <select id="rating-filter">
+                <option value="all">All Ratings</option>
+                <option value="4stars">4+ Stars</option>
+                <option value="3stars">3+ Stars</option>
+                <option value="2stars">2+ Stars</option>
+            </select>
+        </div>
+    </div>
+
+    <main>
+        <div class="games-grid" id="game-list"></div>
+    </main>
+
+    <script>
+async function fetchGames(filters = {}) {
+    const url = new URL('http://localhost:3000/games'); // Ensure the URL is correct
+    Object.keys(filters).forEach(key => url.searchParams.append(key, filters[key]));
+
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Error fetching games: ${response.statusText}`);
+        }
+        const games = await response.json();
+        displayGames(games); // Pass the fetched data to the display function
+    } catch (error) {
+        console.error(error);
+        alert('Failed to fetch games. Please try again.');
+    }
+}
+
+// Function to display games in the UI
+function displayGames(games) {
+    const gameList = document.getElementById('game-list');
+    gameList.innerHTML = ''; // Clear previous results
+
+    if (games.length === 0) {
+        gameList.innerHTML = '<p style="text-align: center; color: red;">No games found.</p>';
+        return;
+    }
+
+    games.forEach(game => {
+        const card = document.createElement('div');
+        card.className = 'game-card';
+        card.innerHTML = `
+            <img class="game-image" src="https://via.placeholder.com/250x200" alt="${game.title}">
+            <div class="game-info">
+                <h3 class="game-title">${game.title}</h3>
+                <p class="game-price">$${game.price.toFixed(2)}</p>
+                <p class="game-rating">Rating: ${game.rating} stars</p>
+            </div>
+        `;
+        gameList.appendChild(card);
+    });
+}
+
+        // Event listeners for applying filters
+        document.querySelectorAll('.filters select').forEach(select => {
+            select.addEventListener('change', () => {
+                const yearFilter = document.querySelector('#year-filter').value;
+                const priceFilter = document.querySelector('#price-filter').value;
+                const ratingFilter = document.querySelector('#rating-filter').value;
+
+                const filters = {};
+                if (yearFilter !== 'all') filters.year = yearFilter;
+                if (priceFilter !== 'all') {
+                    if (priceFilter === 'under20') filters.price = { $lt: 20 };
+                    else if (priceFilter === '20to50') filters.price = { $gte: 20, $lte: 50 };
+                    else if (priceFilter === 'over50') filters.price = { $gt: 50 };
+                }
+                if (ratingFilter !== 'all') {
+                    if (ratingFilter === '4stars') filters.rating = { $gte: 4 };
+                    else if (ratingFilter === '3stars') filters.rating = { $gte: 3 };
+                    else if (ratingFilter === '2stars') filters.rating = { $gte: 2 };
+                }
+
+                fetchGames(filters);
+            });
+        });
+
+        // Load all games on page load
+        window.onload = () => fetchGames();
+    </script>
+</body>
+</html>
